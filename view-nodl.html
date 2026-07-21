@@ -24,20 +24,21 @@
     <iframe id="frame"></iframe>
     <div class="shield" id="shield"></div>
   </div>
-  <script>
+    <script>
     const p = new URLSearchParams(location.search);
     const f = p.get('f');
     const t = p.get('t') || 'Document';
     document.getElementById('title').textContent = t;
     document.title = t;
-    if (f) document.getElementById('frame').src = f + '#toolbar=0';
-
-    // blocare click-dreapta pe toată pagina
+    if (f) {
+      // codăm numele fișierului ca să reziste la puncte/caractere speciale
+      document.getElementById('frame').src = encodeURIComponent(f) + '#toolbar=0';
+    }
     document.addEventListener('contextmenu', e => e.preventDefault());
-    // blocare combinații uzuale (Ctrl+S salvare, Ctrl+P print)
     document.addEventListener('keydown', e => {
       if ((e.ctrlKey || e.metaKey) && ['s','p'].includes(e.key.toLowerCase())) e.preventDefault();
     });
   </script>
+
 </body>
 </html>
