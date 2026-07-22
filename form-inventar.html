@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inventariere sumară — completează</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #eef1f5; color: #1f2328; }
+    header { background: #24292f; color: #fff; padding: 14px 16px; display: flex; align-items: center; gap: 10px; }
+    header a.back { color: #fff; text-decoration: none; opacity: .85; }
+    header .title { font-weight: 600; }
+    main { max-width: 780px; margin: 24px auto; padding: 0 16px 60px; }
+    .card { background: #fff; border: 1px solid #d0d7de; border-radius: 12px; padding: 22px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+    .brand { font-size: 12px; font-weight: 700; letter-spacing: .5px; color: #656d76; text-align: left; margin: 0 0 4px; }
+    h1 { font-size: 20px; margin: 0 0 4px; }
+    .sub { color: #656d76; font-size: 14px; margin: 0 0 18px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
+    input, select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid #d0d7de; border-radius: 8px;
+      font-size: 15px; font-family: inherit; background: #fff;
+    }
+    input.invalid, select.invalid, .sigwrap.invalid { border-color: #cf222e; background: #fff6f6; }
+    textarea { min-height: 70px; resize: vertical; }
+    .hidden { display: none; }
+    h2 { font-size: 16px; margin: 26px 0 6px; }
+
+    .inv-head, .inv-row { display: grid; grid-template-columns: 34px 1.6fr 1fr 1fr 1fr 1.4fr; gap: 6px; align-items: center; }
+    .inv-head { font-size: 11px; font-weight: 700; color: #656d76; margin: 8px 0 4px; text-align: center; }
+    .inv-row { margin-bottom: 6px; }
+    .inv-row .nrc { text-align: center; font-weight: 600; color: #656d76; font-size: 13px; }
+    .inv-row input { padding: 8px; font-size: 13px; }
+    .inv-row .dif { background: #f6f8fa; }
+    @media (max-width: 620px) {
+      .inv-head { display: none; }
+      .inv-row {
+        grid-template-columns: 1fr 1fr; border: 1px solid #e1e6ea; border-radius: 8px;
+        padding: 8px; margin-bottom: 10px; position: relative;
+      }
+      .inv-row .nrc { position: absolute; top: 6px; right: 10px; }
+      .inv-row .cat { grid-column: 1 / -1; }
+      .inv-row input::placeholder { color: #9aa3ac; }
+    }
+    .addbtn {
+      margin-top: 8px; background: #eef1f5; color: #24292f; border: 1px solid #d0d7de;
+      border-radius: 8px; padding: 8px 14px; font-size: 14px; font-weight: 600; cursor: pointer; width: auto;
+    }
+    .addbtn:hover { background: #e2e6eb; }
+
+    .pers { border: 1px solid #e1e6ea; border-radius: 10px; padding: 14px; margin-bottom: 12px; position: relative; }
+    .pers .rmv { position: absolute; top: 10px; right: 12px; background: none; border: none; color: #cf222e;
+      font-size: 20px; cursor: pointer; width: auto; margin: 0; padding: 0; line-height: 1; }
+    .sigwrap { border: 1px dashed #b0b8c0; border-radius: 8px; background: #fff; margin-top: 6px; }
+    .sig { display: block; width: 100%; height: 130px; touch-action: none; border-radius: 8px; }
+    .sigclear { margin-top: 6px; background: #eef1f5; color: #24292f; border: 1px solid #d0d7de;
+      border-radius: 6px; padding: 5px 10px; font-size: 12px; font-weight: 600; cursor: pointer; width: auto; }
+
+    button.main {
+      margin-top: 22px; width: 100%; padding: 13px; border: none; border-radius: 8px;
+      background: #2da44e; color: #fff; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    button.main:hover { background: #2c974b; }
+    .hint { font-size: 12px; color: #8a929b; margin-top: 14px; text-align: center; }
+    .err { color: #cf222e; font-size: 13px; font-weight: 600; margin-top: 12px; text-align: center; display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back" href="index.html">←</a>
+    <span class="title">Inventariere sumară</span>
+  </header>
+  <main>
+    <div class="card">
+      <p class="brand">FUMEAZAOK / SMOKEMANIA</p>
+      <h1>Inventariere sumară pe categorii</h1>
+      <p class="sub">Completează, adaugă rânduri și persoane, apoi apasă „Descarcă PDF".</p>
+
+      <label>Data</label>
+      <input id="data" type="date">
+
+      <label>Firma</label>
+      <select id="firma">
+        <option value="" disabled selected>ex. Premium Vaping</option>
+        <option>Premium Vaping</option>
+        <option>Smoke Mania Online</option>
+        <option value="__alt__">Altul...</option>
+      </select>
+      <input id="firma_alt" class="hidden" type="text" placeholder="Scrie firma" style="margin-top:8px">
+
+      <label>Punct de lucru</label>
+      <input id="punct" type="text" placeholder="ex. SmokeMania Centru">
+
+      <label>Responsabil inventar</label>
+      <input id="responsabil" type="text" placeholder="ex. Popescu Ion">
+
+      <h2>Categorii inventariate</h2>
+      <div class="inv-head">
+        <div>Nr.</div><div>Categorie produs</div><div>Cant. gestiune</div><div>Cant. fizică</div><div>Diferență</div><div>Observații</div>
+      </div>
+      <div id="rows"></div>
+      <button type="button" class="addbtn" id="addRow">+ Adaugă rând</button>
+
+      <h2>Observații generale</h2>
+      <textarea id="obs" placeholder="(opțional)"></textarea>
+
+      <h2>Persoane care au participat</h2>
+      <div id="persoane"></div>
+      <button type="button" class="addbtn" id="addPers">+ Adaugă persoană</button>
+
+      <button class="main" id="gen">⬇ Descarcă PDF</button>
+      <p class="err" id="err">Completează câmpurile de sus, cel puțin un rând de inventar și o persoană cu semnătură.</p>
+      <p class="hint">Documentul se generează în calculatorul tău. Fișierul model nu se modifică.</p>
+    </div>
+  </main>
+
+  <script src="jspdf.umd.min.js"></script>
+  <script>
+    function noDia(s){
+      return (s||'')
+        .replace(/[ăâà]/g,'a').replace(/[ĂÂÀ]/g,'A')
+        .replace(/[îì]/g,'i').replace(/[ÎÌ]/g,'I')
+        .replace(/[șş]/g,'s').replace(/[ȘŞ]/g,'S')
+        .replace(/[țţ]/g,'t').replace(/[ȚŢ]/g,'T')
+        .replace(/[éè]/g,'e').replace(/[ÉÈ]/g,'E');
+    }
+    function raw(id){ const el = document.getElementById(id); return el ? (el.value||'').trim() : ''; }
+    function dRO(v){ if(!v) return '__________'; const p=v.split('-'); return p.length===3 ? p[2]+'.'+p[1]+'.'+p[0] : v; }
+    function selVal(selId){ const s=document.getElementById(selId); return s.value==='__alt__' ? raw(selId+'_alt') : raw(selId); }
+
+    (function(){
+      const s=document.getElementById('firma'), alt=document.getElementById('firma_alt');
+      s.addEventListener('change', function(){
+        if(s.value==='__alt__'){ alt.classList.remove('hidden'); alt.focus(); }
+        else { alt.classList.add('hidden'); alt.value=''; }
+      });
+    })();
+
+    (function(){
+      const d=new Date();
+      document.getElementById('data').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    })();
+
+    let rowN = 0;
+    const rowsBox = document.getElementById('rows');
+    function addRow(){
+      rowN++;
+      const div = document.createElement('div');
+      div.className = 'inv-row';
+      div.innerHTML =
+        '<div class="nrc">'+rowN+'</div>'+
+        '<input class="cat" type="text" placeholder="Categorie produs">'+
+        '<input class="cg" type="number" step="any" placeholder="Gestiune">'+
+        '<input class="cf" type="number" step="any" placeholder="Fizic">'+
+        '<input class="dif" type="number" step="any" placeholder="Diferență">'+
+        '<input class="obs" type="text" placeholder="Observații">';
+      rowsBox.appendChild(div);
+      const cat=div.querySelector('.cat'), cg=div.querySelector('.cg'), cf=div.querySelector('.cf'),
+            dif=div.querySelector('.dif'), obs=div.querySelector('.obs');
+      let difManual=false, obsManual=false;
+      dif.addEventListener('input', function(){ difManual=true; });
+      obs.addEventListener('input', function(){ obsManual=true; });
+      function recalc(){
+        if(cat.value.trim()==='') { if(!difManual) dif.value=''; if(!obsManual) obs.value=''; return; }
+        if(!difManual && cg.value!=='' && cf.value!==''){
+          dif.value = (parseFloat(cf.value) - parseFloat(cg.value));
+        }
+        if(!obsManual){
+          const d = dif.value!=='' ? parseFloat(dif.value) : null;
+          obs.value = (d===0) ? 'OK' : '';
+        }
+      }
+      cat.addEventListener('input', recalc);
+      cg.addEventListener('input', recalc);
+      cf.addEventListener('input', recalc);
+    }
+    document.getElementById('addRow').addEventListener('click', addRow);
+    addRow(); addRow(); addRow();
+
+    let persN = 0;
+    const persBox = document.getElementById('persoane');
+    function setupSig(canvas, wrap){
+      const ctx = canvas.getContext('2d');
+      let drawing=false, has=false;
+      function resize(){
+        const ratio=window.devicePixelRatio||1;
+        canvas.width=canvas.offsetWidth*ratio; canvas.height=canvas.offsetHeight*ratio;
+        ctx.scale(ratio,ratio); ctx.lineWidth=2; ctx.lineCap='round'; ctx.strokeStyle='#111';
+      }
+      setTimeout(resize,50);
+      function pos(e){ const r=canvas.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:t.clientX-r.left,y:t.clientY-r.top}; }
+      canvas.addEventListener('mousedown',function(e){ drawing=true;has=true;wrap.classList.remove('invalid');const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault();});
+      canvas.addEventListener('mousemove',function(e){ if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault();});
+      window.addEventListener('mouseup',function(){ drawing=false;});
+      canvas.addEventListener('touchstart',function(e){ drawing=true;has=true;wrap.classList.remove('invalid');const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);e.preventDefault();});
+      canvas.addEventListener('touchmove',function(e){ if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();e.preventDefault();});
+      canvas.addEventListener('touchend',function(){ drawing=false;});
+      return { clear:function(){ ctx.clearRect(0,0,canvas.width,canvas.height);has=false;}, has:function(){return has;}, data:function(){return canvas.toDataURL('image/png');} };
+    }
+    const persItems = [];
+    function addPers(){
+      persN++;
+      const div=document.createElement('div');
+      div.className='pers';
+      div.innerHTML =
+        '<button type="button" class="rmv" title="Șterge">×</button>'+
+        '<label>Nume și prenume</label><input class="pnume" type="text" placeholder="ex. Popescu Ion">'+
+        '<label>Funcția</label><input class="pfunc" type="text" placeholder="ex. Lucrător comercial">'+
+        '<label>Semnătura</label><div class="sigwrap"><canvas class="sig"></canvas></div>'+
+        '<button type="button" class="sigclear">Șterge semnătura</button>';
+      persBox.appendChild(div);
+      const canvas=div.querySelector('.sig'), wrap=div.querySelector('.sigwrap');
+      const sig=setupSig(canvas, wrap);
+      div.querySelector('.sigclear').addEventListener('click', sig.clear);
+      const item = { div:div, sig:sig,
+        nume:()=>div.querySelector('.pnume').value.trim(),
+        func:()=>div.querySelector('.pfunc').value.trim() };
+      div.querySelector('.rmv').addEventListener('click', function(){
+        div.remove();
+        const i = persItems.indexOf(item); if(i>=0) persItems.splice(i,1);
+      });
+      persItems.push(item);
+    }
+    document.getElementById('addPers').addEventListener('click', addPers);
+    addPers();
+
+    document.getElementById('gen').addEventListener('click', function(){
+      const err = document.getElementById('err');
+      err.style.display='none';
+      let ok=true;
+
+      ['firma','punct','responsabil'].forEach(function(id){
+        const el=document.getElementById(id); el.classList.remove('invalid');
+        let gol = raw(id)==='';
+        if(el.value==='__alt__'){ gol = raw(id+'_alt')===''; if(gol) document.getElementById(id+'_alt').classList.add('invalid'); }
+        if(gol){ el.classList.add('invalid'); ok=false; }
+      });
+
+      const invRows = [];
+      rowsBox.querySelectorAll('.inv-row').forEach(function(r){
+        const cat=r.querySelector('.cat').value.trim();
+        if(cat!==''){
+          invRows.push({
+            cat:cat, cg:r.querySelector('.cg').value.trim(), cf:r.querySelector('.cf').value.trim(),
+            dif:r.querySelector('.dif').value.trim(), obs:r.querySelector('.obs').value.trim()
+          });
+        }
+      });
+      if(invRows.length===0) ok=false;
+
+      const pers = [];
+      persItems.forEach(function(p){
+        if(p.nume()!=='' && p.sig.has()){ pers.push(p); }
+        else if(p.nume()!=='' && !p.sig.has()){ p.div.querySelector('.sigwrap').classList.add('invalid'); ok=false; }
+      });
+      if(pers.length===0) ok=false;
+
+      if(!ok){ err.style.display='block'; return; }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit:'mm', format:'a4' });
+      const L=15, R=195; let y=18;
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(10);
+      doc.text('FUMEAZAOK / SMOKEMANIA', L, y); y+=8;
+      doc.setFontSize(14);
+      doc.text('INVENTARIERE SUMARA PE CATEGORII', 105, y, {align:'center'}); y+=10;
+
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      doc.text('Data: '+dRO(raw('data'))+'    Firma: '+noDia(selVal('firma')), L, y); y+=6;
+      doc.text('Punct de lucru: '+noDia(raw('punct'))+'    Responsabil: '+noDia(raw('responsabil')), L, y); y+=8;
+
+      const cols = [ {t:'Nr.',w:10}, {t:'Categorie produs',w:60}, {t:'Cant. gest.',w:25},
+                     {t:'Cant. fizica',w:25}, {t:'Diferenta',w:22}, {t:'Observatii',w:38} ];
+      let x=L;
+      doc.setFont('helvetica','bold'); doc.setFontSize(8);
+      cols.forEach(function(c){ doc.rect(x,y,c.w,7); doc.text(c.t, x+1.5, y+4.5); x+=c.w; });
+      y+=7;
+      doc.setFont('helvetica','normal');
+      invRows.forEach(function(r,i){
+        x=L;
+        const vals=[String(i+1), noDia(r.cat), r.cg, r.cf, r.dif, noDia(r.obs)];
+        cols.forEach(function(c,ci){
+          doc.rect(x,y,c.w,7);
+          const txt = doc.splitTextToSize(vals[ci]||'', c.w-3);
+          doc.text(txt.slice(0,1), x+1.5, y+4.5);
+          x+=c.w;
+        });
+        y+=7;
+        if(y>270){ doc.addPage(); y=18; }
+      });
+      y+=6;
+
+      if(noDia(raw('obs'))!==''){
+        doc.setFont('helvetica','bold'); doc.text('Observatii generale:', L, y); y+=5;
+        doc.setFont('helvetica','normal');
+        const ol=doc.splitTextToSize(noDia(raw('obs')), R-L); doc.text(ol, L, y); y+=ol.length*5+4;
+      }
+
+      doc.setFontSize(9);
+      doc.text('Prin semnatura de mai jos, confirmam ca inventarierea s-a realizat corespunzator si datele sunt corecte.', L, y, {maxWidth:R-L}); y+=10;
+
+      doc.setFont('helvetica','bold'); doc.setFontSize(9);
+      doc.text('Nume si Prenume', L, y); doc.text('Functia', L+70, y); doc.text('Semnatura', L+120, y); y+=3;
+      doc.setDrawColor(200); doc.line(L, y, R, y); y+=2;
+      doc.setFont('helvetica','normal');
+      pers.forEach(function(p){
+        if(y>260){ doc.addPage(); y=18; }
+        doc.setFontSize(10);
+        doc.text(noDia(p.nume()), L, y+6);
+        doc.text(noDia(p.func()), L+70, y+6);
+        doc.addImage(p.sig.data(), 'PNG', L+118, y, 40, 14);
+        y+=16; doc.setDrawColor(220); doc.line(L, y, R, y); y+=2;
+      });
+
+      doc.save('Inventariere ' + noDia(raw('punct')||'') + ' ' + dRO(raw('data')) + '.pdf');
+    });
+  </script>
+</body>
+</html>
